@@ -6,6 +6,7 @@ const typeDefs = gql`
     name: String
     startDate: String
     endDate: String
+    status: String
     leaderboard: Leaderboard
   }
 
