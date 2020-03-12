@@ -42,6 +42,13 @@ const typeDefs = gql`
     token: String
   }
 
+  type Ranking {
+    firstName: String!
+    lastName: String!
+    points: Float!
+    projectedPoints: Float
+  }
+
   input LoginInput {
     email: String!
     password: String!
@@ -56,9 +63,10 @@ const typeDefs = gql`
 
   type Query {
     events: [Event]
-    event(id: String): Event
+    event(id: String!): Event
     bets: [Bet]
-    bet(userId: String, eventId: String): Bet
+    bet(userId: String!, eventId: String!): Bet
+    projected(eventId: String!): [Ranking]
   }
 
   type Mutation {

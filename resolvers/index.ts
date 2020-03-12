@@ -1,5 +1,5 @@
 import { events, event } from './events'
-import { bets, bet, createBet } from './bets'
+import { bets, bet, createBet, projected } from './bets'
 import { login, register } from './users'
 import { AuthenticationError } from 'apollo-server'
 
@@ -24,6 +24,7 @@ export default {
     event: combineResolvers(protectedResolver, event),
     bets: combineResolvers(protectedResolver, bets),
     bet: combineResolvers(protectedResolver, bet),
+    projected: combineResolvers(protectedResolver, projected),
   },
   Mutation: {
     createBet: combineResolvers(protectedResolver, createBet),

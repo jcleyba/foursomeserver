@@ -1,6 +1,10 @@
 import axios from 'axios'
 import sql from '../db'
 
+const EVENT_STARTED = 'in'
+const EVENT_PREV = 'pre'
+const EVENT_FINISHED = 'post'
+
 export async function bets() {
   try {
     const [bet] = await sql`select id, userId from bets;`
@@ -28,7 +32,7 @@ export async function bet(_: any, args: any, context: any) {
     const players = mapPlayers(storedBet, leaderboard.competitors)
 
     // Checking if tournament started or finished
-    const result = data.status !== 'pre' ? calcResult(players) : 0
+    const result = data.status === EVENT_STARTED ? calcResult(players) : 0
 
     return {
       userId: userid,
@@ -59,6 +63,52 @@ export async function createBet(_: any, args: any) {
       eventId,
       season: new Date(bet.created_on).getFullYear(),
     }
+  } catch (e) {
+    console.error(e)
+    throw e
+  }
+}
+
+export async function projected(_: any, args: any) {
+  try {
+    const { eventId } = args
+
+    const { data } = await axios.get(
+      'https://www.espn.com/golf/leaderboard?_xhr=pageContent&tournamentId=' +
+        eventId
+    )
+
+    const ranking = await sql`select userid, firstname, lastname, SUM(result) 
+    from bets inner join users on bets.userid = users.id 
+    GROUP BY userid, firstname, lastname ORDER BY sum(result) desc`
+
+    const { count } = ranking
+    const { leaderboard } = data
+
+    if (leaderboard?.status === EVENT_STARTED) {
+      const bets = await sql`select * from bets where eventid = ${eventId}`
+      const { count } = bets
+
+      let proj: any = {}
+      for (let bet of bets.slice(0, count)) {
+        const players = mapPlayers(bet.players, leaderboard.competitors)
+        const points = calcResult(players)
+        proj[bet.userid] = { ...bet, points }
+      }
+
+      return ranking.slice(0, count).map((rank: any) => ({
+        firstName: rank.firstname,
+        lastName: rank.lastname,
+        points: rank.sum,
+        projectedPoints: proj[rank.userid]?.points,
+      }))
+    }
+
+    return ranking.slice(0, count).map((rank: any) => ({
+      firstName: rank.firstname,
+      lastName: rank.lastname,
+      points: rank.sum,
+    }))
   } catch (e) {
     console.error(e)
     throw e
