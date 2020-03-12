@@ -3,9 +3,7 @@ import sql from '../db'
 
 export async function bets() {
   try {
-    const [bet] = await sql`
-            select id, userId from bets
-          `
+    const [bet] = await sql`select id, userId from bets;`
 
     return bet
   } catch (e) {
@@ -13,7 +11,7 @@ export async function bets() {
   }
 }
 
-export async function bet(_: any, args: any) {
+export async function bet(_: any, args: any, context: any) {
   try {
     const { userId, eventId } = args
     const [bet] = await sql`select * from bets where 
@@ -30,8 +28,7 @@ export async function bet(_: any, args: any) {
     const players = mapPlayers(storedBet, leaderboard.competitors)
 
     // Checking if tournament started or finished
-    const result =
-      !storedResult && data.status !== 'pre' ? calcResult(players) : 0
+    const result = data.status !== 'pre' ? calcResult(players) : 0
 
     return {
       userId: userid,
@@ -41,6 +38,7 @@ export async function bet(_: any, args: any) {
     }
   } catch (e) {
     console.error(e)
+    throw e
   }
 }
 
@@ -59,6 +57,7 @@ export async function createBet(_: any, args: any) {
       ...bet,
       userId,
       eventId,
+      season: new Date(bet.created_on).getFullYear(),
     }
   } catch (e) {
     console.error(e)
@@ -84,8 +83,12 @@ const calcResult = (players: any[]) => {
 
   for (let player of players) {
     const position = player.pos
-    const number: number = parseFloat(position.replace('T', ''))
-    sum += (1 / number) * 100
+    if (position === '-') {
+      sum += 0
+    } else {
+      const number: number = parseFloat(position.replace('T', ''))
+      sum += (1 / number) * 100
+    }
   }
 
   return sum.toFixed(2)

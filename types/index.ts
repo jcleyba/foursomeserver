@@ -1,8 +1,8 @@
-const { gql } = require("apollo-server");
+const { gql } = require('apollo-server')
 
 const typeDefs = gql`
   type Event {
-    id: ID
+    id: ID!
     name: String
     startDate: String
     endDate: String
@@ -15,7 +15,7 @@ const typeDefs = gql`
   }
 
   type Player {
-    id: ID
+    id: ID!
     name: String
     pos: String
     score: String
@@ -23,14 +23,35 @@ const typeDefs = gql`
     flag: String
   }
   type Bet {
-    userId: String
-    eventId: String
+    userId: String!
+    eventId: String!
     players: [Player]
+    season: Int
     result: Float
   }
 
   input PlayersInput {
-    id: ID
+    id: ID!
+  }
+
+  type User {
+    id: ID!
+    firstName: String
+    lastName: String
+    email: String
+    token: String
+  }
+
+  input LoginInput {
+    email: String!
+    password: String!
+  }
+
+  input RegisterInput {
+    firstName: String!
+    lastName: String!
+    email: String!
+    password: String!
   }
 
   type Query {
@@ -42,7 +63,9 @@ const typeDefs = gql`
 
   type Mutation {
     createBet(userId: String, eventId: String, players: [PlayersInput]): Bet
+    login(loginData: LoginInput): User
+    register(registerData: RegisterInput): User
   }
-`;
+`
 
-export default typeDefs;
+export default typeDefs
