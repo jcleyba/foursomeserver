@@ -1,4 +1,3 @@
-import {} from 'date-fns'
 import axios from 'axios'
 
 // Singleton to access events
