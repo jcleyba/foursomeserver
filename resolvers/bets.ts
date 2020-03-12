@@ -1,5 +1,6 @@
 import axios from 'axios'
 import sql from '../db'
+import EventManager from '../utils/EventManager'
 
 const EVENT_STARTED = 'in'
 const EVENT_PREV = 'pre'
@@ -21,12 +22,15 @@ export async function bet(_: any, args: any, context: any) {
     const [bet] = await sql`select * from bets where 
     userid = ${userId} and eventid = ${eventId}`
 
+    if (!bet) {
+      return null
+    }
+
     const { data } = await axios.get(
-      'https://www.espn.com/golf/leaderboard?_xhr=pageContent&tournamentId=' +
-        eventId
+      process.env.LEADERBOARD_ENDPOINT || '' + eventId
     )
 
-    const { userid, eventid, players: storedBet, storedResult } = bet
+    const { userid, eventid, players: storedBet } = bet
     const { leaderboard } = data
 
     const players = mapPlayers(storedBet, leaderboard.competitors)
@@ -49,6 +53,12 @@ export async function bet(_: any, args: any, context: any) {
 export async function createBet(_: any, args: any) {
   try {
     const { userId, eventId, players } = args
+
+    const activeEvent: any = await EventManager.getActiveEvent()
+    console.debug(activeEvent)
+    if (activeEvent?.id !== eventId) {
+      throw Error('Event already finished or in play')
+    }
 
     const [
       bet,
@@ -73,10 +83,7 @@ export async function projected(_: any, args: any) {
   try {
     const { eventId } = args
 
-    const { data } = await axios.get(
-      'https://www.espn.com/golf/leaderboard?_xhr=pageContent&tournamentId=' +
-        eventId
-    )
+    const { data } = await axios.get(process.env.LEADERBOARD_ENDPOINT + eventId)
 
     const ranking = await sql`select userid, firstname, lastname, SUM(result) 
     from bets inner join users on bets.userid = users.id 

@@ -1,39 +1,33 @@
-const axios = require('axios')
+import axios from 'axios'
+import EventManager from '../utils/EventManager'
 
 export async function events() {
   try {
-    const { data } = await axios.get(
-      'https://www.espn.com/golf/schedule/_/season/2020?_xhr=pageContent'
-    )
+    const events = await EventManager.getEvents()
 
-    return data.events.map((event: any) => {
-      const id = event.link.split('=')[1]
-
-      return {
-        id,
-        ...event,
-      }
-    })
+    return events
   } catch (e) {
     return e.response
   }
 }
 
 export async function event(_: any, args: Record<string, unknown>) {
-  const { id } = args
-  if (!id) throw Error('Id is missing')
+  const { id: eventId } = args
+  if (!eventId) throw Error('Id is missing')
   try {
     const { data } = await axios.get(
-      'https://www.espn.com/golf/leaderboard?_xhr=pageContent&tournamentId=' +
-        id
+      process.env.LEADERBOARD_ENDPOINT || '' + eventId
     )
+    const { leaderboard } = data
+    const { id, name, competitors, status } = leaderboard
 
     return {
-      id: data.leaderboard.id,
-      name: data.leaderboard.name,
+      id,
+      name,
+      status,
       leaderboard: {
-        ...data.leaderboard,
-        players: data.leaderboard.competitors
+        ...leaderboard,
+        players: competitors
           .sort((a: any, b: any) => a.order - b.order)
           .map((player: Record<string, unknown>) => ({
             ...player,
@@ -42,7 +36,7 @@ export async function event(_: any, args: Record<string, unknown>) {
       },
     }
   } catch (e) {
-    throw Error(e.response.message)
+    throw e
   }
 }
 
