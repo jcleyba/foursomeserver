@@ -1,4 +1,5 @@
 import axios from 'axios'
+import isThisWeek from 'date-fns/isThisWeek'
 
 // Singleton to access events
 class EventManager {
@@ -35,14 +36,21 @@ class EventManager {
       const eventList = await this.getEvents()
       if (!eventList.length) return null
 
-      for (let ev of eventList) {
-        const now = Date.now()
-        const start = new Date(ev.startDate).getTime()
-        const end = new Date(ev.endDate).getTime()
-        if (now < end && now > start) {
-          return ev
-        }
-      }
+      return eventList.find((item: any) => isThisWeek(new Date(item.startDate)))
+    } catch (e) {
+      console.error(e)
+      throw e
+    }
+  }
+
+  async getLastActiveEvent() {
+    try {
+      const eventList = await this.getEvents()
+      if (!eventList.length) return null
+
+      const index = eventList.findIndex((item: any) => item.status !== 'post')
+
+      return eventList[index - 1]
     } catch (e) {
       console.error(e)
       throw e

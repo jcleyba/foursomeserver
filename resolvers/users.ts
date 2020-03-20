@@ -13,6 +13,10 @@ export async function login(_: any, args: any) {
     if (!user) {
       throw Error('No user found')
     }
+    if (!user.verified) {
+      throw Error('Account not verified')
+    }
+
     const passwordMatch = await bcrypt.compare(password, user.password)
 
     if (!passwordMatch) {
@@ -40,7 +44,7 @@ export async function register(_: any, args: any) {
 
     const [
       user,
-    ] = await sql`insert into users (firstname, lastname, email, password, created_on) values (${firstName}, ${lastName}, ${email}, ${hashedPassword}, ${new Date().toISOString()}) returning *`
+    ] = await sql`insert into users (firstname, lastname, email, password, verified, created_on) values (${firstName}, ${lastName}, ${email}, ${hashedPassword}, false, ${new Date().toISOString()}) returning *`
 
     if (user) {
       const token = jwt.sign({ user }, process.env.PRIVATE_KEY || 'private', {
