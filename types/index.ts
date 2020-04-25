@@ -8,6 +8,10 @@ const typeDefs = gql`
     endDate: String
     status: String
     leaderboard: Leaderboard
+    athlete: Player
+    purse: String
+    location: String
+    isMajor: Boolean
   }
 
   type Leaderboard {
@@ -22,6 +26,7 @@ const typeDefs = gql`
     score: String
     img: String
     flag: String
+    citizenship: String
   }
   type Bet {
     userId: String!

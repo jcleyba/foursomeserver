@@ -5,7 +5,9 @@ export async function events() {
   try {
     const events = await EventManager.getEvents()
 
-    return events
+    return events.map(ev => {
+      return { ...ev, location: ev.locations[0].venue.fullName }
+    })
   } catch (e) {
     return e.response
   }
@@ -15,9 +17,8 @@ export async function event(_: any, args: Record<string, unknown>) {
   const { id: eventId } = args
   if (!eventId) throw Error('Id is missing')
   try {
-    const { data } = await axios.get(
-      process.env.LEADERBOARD_ENDPOINT || '' + eventId
-    )
+    const url = `${process.env.LEADERBOARD_ENDPOINT || ''}${eventId}`
+    const { data } = await axios.get(url)
     const { leaderboard } = data
     const { id, name, competitors, status } = leaderboard
 
