@@ -12,7 +12,7 @@ export async function bets() {
 
     return bet
   } catch (e) {
-    throw e
+    return e
   }
 }
 
@@ -47,7 +47,7 @@ export async function bet(_: any, args: any, context: any) {
     }
   } catch (e) {
     console.error(e)
-    throw e
+    return e
   }
 }
 
@@ -57,7 +57,7 @@ export async function createBet(_: any, args: any) {
 
     const activeEvent: any = await EventManager.getActiveEvent()
     if (activeEvent?.id !== eventId) {
-      throw Error('Event already finished or in play')
+      return Error('Event already finished or in play')
     }
 
     const [
@@ -75,7 +75,7 @@ export async function createBet(_: any, args: any) {
     }
   } catch (e) {
     console.error(e)
-    throw e
+    return e
   }
 }
 
@@ -118,18 +118,18 @@ export async function projected(_: any, args: any) {
     }))
   } catch (e) {
     console.error(e)
-    throw e
+    return e
   }
 }
 
 export async function updateResults(eventId: string) {
   try {
-    if (!eventId) throw Error('Invalid request')
+    if (!eventId) return Error('Invalid request')
 
     const { data } = await axios.get(process.env.LEADERBOARD_ENDPOINT + eventId)
     const { leaderboard } = data
 
-    if (!data || !leaderboard) throw Error('Error getting leaderboard')
+    if (!data || !leaderboard) return Error('Error getting leaderboard')
 
     const bets = await sql`select * from bets where eventid = ${eventId}`
 
@@ -147,11 +147,11 @@ export async function updateResults(eventId: string) {
       })
       return true
     } else {
-      throw Error('No bets found')
+      return Error('No bets found')
     }
   } catch (e) {
     console.error(e)
-    throw e
+    return e
   }
 }
 

@@ -21,7 +21,7 @@ const server = new ApolloServer({
 
       return { user }
     } catch (e) {
-      throw new AuthenticationError('you must be logged in')
+      return new AuthenticationError('you must be logged in')
     }
   },
 })

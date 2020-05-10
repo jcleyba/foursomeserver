@@ -79,6 +79,9 @@ const typeDefs = gql`
     createBet(userId: String, eventId: String, players: [PlayersInput]): Bet
     login(loginData: LoginInput): User
     register(registerData: RegisterInput): User
+    verify(token: String): Boolean
+    forgot(email: String): Boolean
+    resetPassword(token: String, password: String): Boolean
   }
 `
 

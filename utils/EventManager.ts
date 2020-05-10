@@ -27,7 +27,7 @@ class EventManager {
     } catch (e) {
       console.error(e)
 
-      throw e
+      return e
     }
   }
 
@@ -39,7 +39,7 @@ class EventManager {
       return eventList.find((item: any) => isThisWeek(new Date(item.startDate)))
     } catch (e) {
       console.error(e)
-      throw e
+      return e
     }
   }
 
@@ -53,7 +53,7 @@ class EventManager {
       return eventList[index - 1]
     } catch (e) {
       console.error(e)
-      throw e
+      return e
     }
   }
 }

@@ -1,6 +1,6 @@
 import { events, event } from './events'
 import { bets, bet, createBet, projected } from './bets'
-import { login, register } from './users'
+import { login, register, verify, forgot, resetPassword } from './users'
 import { AuthenticationError } from 'apollo-server'
 
 //@ts-ignore
@@ -15,7 +15,7 @@ export const combineResolvers = (...funcs) => (...args) =>
 
 function protectedResolver(...args: any) {
   const [, , context] = args
-  if (!context.user) throw new AuthenticationError('Must be logged in!')
+  if (!context.user) return new AuthenticationError('Must be logged in!')
 }
 
 export default {
@@ -30,6 +30,9 @@ export default {
     createBet: combineResolvers(protectedResolver, createBet),
     login,
     register,
+    verify,
+    forgot,
+    resetPassword,
   },
 }
 
@@ -38,11 +41,13 @@ await sql`
         CREATE TABLE IF NOT EXISTS users
         (
           id serial PRIMARY KEY,
-          firstname VARCHAR (50) UNIQUE NOT NULL,
-          lastname VARCHAR (50) UNIQUE NOT NULL,
+          firstname VARCHAR (50) NOT NULL,
+          lastname VARCHAR (50) NOT NULL,
    password text NOT NULL,
    email VARCHAR (100) UNIQUE NOT NULL,
-   created_on TIMESTAMP NOT NULL
+   created_on TIMESTAMP NOT NULL,
+   verified BOOL NOT NULL,
+   token text
         );`;
         
 await sql`
