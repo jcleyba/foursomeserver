@@ -13,13 +13,13 @@ const server = new ApolloServer({
   resolvers,
   introspection: true,
   playground: true,
-  context: async ({ req }) => {
+  context: async ({ req, res }) => {
     try {
       const tokenWithBearer = req.headers.authorization || ''
       const token = tokenWithBearer.split(' ')[1]
       const user = await getUser(token)
 
-      return { user }
+      return { req, res, user }
     } catch (e) {
       return new AuthenticationError('you must be logged in')
     }
