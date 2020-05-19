@@ -12,6 +12,7 @@ const typeDefs = gql`
     purse: String
     location: String
     isMajor: Boolean
+    season: Int
   }
 
   type Leaderboard {
@@ -70,18 +71,22 @@ const typeDefs = gql`
   type Query {
     events: [Event]
     event(id: String!): Event
+    activeEvent: Event
+    nextActiveEvent: Event
     bets: [Bet]
-    bet(userId: String!, eventId: String!): Bet
+    bet(eventId: String!): Bet
     projected(eventId: String!): [Ranking]
+    ranking: [Ranking]
   }
 
   type Mutation {
-    createBet(userId: String, eventId: String, players: [PlayersInput]): Bet
+    createBet(eventId: String, players: [PlayersInput], season: Int): Bet
     login(loginData: LoginInput): User
     register(registerData: RegisterInput): User
     verify(token: String): Boolean
     forgot(email: String): Boolean
     resetPassword(token: String, password: String): Boolean
+    updateResults(eventId: String!): Boolean
   }
 `
 

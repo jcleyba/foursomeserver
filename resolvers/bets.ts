@@ -18,26 +18,25 @@ export async function bets() {
 
 export async function bet(_: any, args: any, context: any) {
   try {
-    const { userId, eventId } = args
-    const [bet] = await sql`select * from bets where 
-    userid = ${userId} and eventid = ${eventId}`
+    const { user } = context.user
+    const { eventId } = args
 
+    const [bet] = await sql`select * from bets where 
+    userid = ${user.id} and eventid = ${eventId}`
     if (!bet) {
       return null
     }
-
     const { data } = await axios.get(
-      process.env.LEADERBOARD_ENDPOINT || '' + eventId
+      `${process.env.LEADERBOARD_ENDPOINT}${eventId}`
     )
 
-    const { userid, eventid, players: storedBet } = bet
+    const { userid, eventid, players: storedBet, result: res } = bet
     const { leaderboard } = data
 
     const players = mapPlayers(storedBet, leaderboard.competitors)
-
     // Checking if tournament started or finished
     const result =
-      leaderboard.status === EVENT_STARTED ? calcResult(players) : 0
+      leaderboard.status === EVENT_STARTED ? calcResult(players) : res
 
     return {
       userId: userid,
@@ -51,9 +50,10 @@ export async function bet(_: any, args: any, context: any) {
   }
 }
 
-export async function createBet(_: any, args: any) {
+export async function createBet(_: any, args: any, context: any) {
   try {
-    const { userId, eventId, players } = args
+    const { user } = context.user
+    const { eventId, players, season } = args
 
     const activeEvent: any = await EventManager.getActiveEvent()
     if (activeEvent?.id !== eventId) {
@@ -62,14 +62,14 @@ export async function createBet(_: any, args: any) {
 
     const [
       bet,
-    ] = await sql`insert into bets (userid, eventid, players, result, created_on) values (
-      ${userId}, ${eventId}, ${sql.array(
+    ] = await sql`insert into bets (userid, eventid, players, result, created_on, season) values (
+      ${user.id}, ${eventId}, ${sql.array(
       players.map((a: Record<string, unknown>) => a.id)
-    )}, 0, ${new Date().toISOString()}) returning *`
+    )}, 0, ${new Date().toISOString()}, ${season}) returning *`
 
     return {
       ...bet,
-      userId,
+      userId: user.id,
       eventId,
       season: new Date(bet.created_on).getFullYear(),
     }
@@ -122,8 +122,28 @@ export async function projected(_: any, args: any) {
   }
 }
 
-export async function updateResults(eventId: string) {
+export async function ranking(_: any) {
   try {
+    const ranking = await sql`select userid, firstname, lastname, SUM(result) 
+    from bets inner join users on bets.userid = users.id 
+    GROUP BY userid, firstname, lastname ORDER BY sum(result) desc`
+
+    const { count } = ranking
+
+    return ranking?.slice(0, count)?.map((r: any) => ({
+      firstName: r.firstname,
+      lastName: r.lastname,
+      points: r.sum,
+    }))
+  } catch (e) {
+    console.error(e)
+    return e
+  }
+}
+
+export async function updateResults(_: any, args: any) {
+  try {
+    const { eventId } = args
     if (!eventId) return Error('Invalid request')
 
     const { data } = await axios.get(process.env.LEADERBOARD_ENDPOINT + eventId)

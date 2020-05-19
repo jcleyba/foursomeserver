@@ -20,17 +20,18 @@ export async function event(_: any, args: Record<string, unknown>) {
     const url = `${process.env.LEADERBOARD_ENDPOINT || ''}${eventId}`
     const { data } = await axios.get(url)
     const { leaderboard } = data
-    const { id, name, competitors, status } = leaderboard
+    const { id, name, competitors, status, season } = leaderboard
 
     return {
       id,
       name,
       status,
+      season,
       leaderboard: {
         ...leaderboard,
         players: competitors
-          .sort((a: any, b: any) => a.order - b.order)
-          .map((player: Record<string, unknown>) => ({
+          ?.sort((a: any, b: any) => a.order - b.order)
+          ?.map((player: Record<string, unknown>) => ({
             ...player,
             score: player.toPar,
           })),
@@ -38,6 +39,26 @@ export async function event(_: any, args: Record<string, unknown>) {
     }
   } catch (e) {
     return e
+  }
+}
+
+export async function activeEvent() {
+  try {
+    const ev = await EventManager.getActiveEvent()
+
+    return { ...ev, location: ev.locations[0].venue.fullName }
+  } catch (e) {
+    return e.response
+  }
+}
+
+export async function nextActiveEvent() {
+  try {
+    const ev = await EventManager.getNextActiveEvent()
+
+    return { ...ev, location: ev.locations[0].venue.fullName }
+  } catch (e) {
+    return e.response
   }
 }
 

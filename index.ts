@@ -32,7 +32,7 @@ const job = new CronJob('* 1 0 * * 1', async () => {
   try {
     const event = await EventManager.getLastActiveEvent()
     console.log(`*** Event ${event.name} ***`)
-    const done = await updateResults(event.id)
+    const done = await updateResults(null, { eventId: event.id })
     if (done) {
       console.log(`*** Done Updating ***`)
     } else {

@@ -1,7 +1,7 @@
-import { events, event } from './events'
-import { bets, bet, createBet, projected } from './bets'
-import { login, register, verify, forgot, resetPassword } from './users'
 import { AuthenticationError } from 'apollo-server'
+import { bet, bets, createBet, projected, updateResults, ranking } from './bets'
+import { activeEvent, event, events, nextActiveEvent } from './events'
+import { forgot, login, register, resetPassword, verify } from './users'
 
 //@ts-ignore
 export const combineResolvers = (...funcs) => (...args) =>
@@ -25,6 +25,9 @@ export default {
     bets: combineResolvers(protectedResolver, bets),
     bet: combineResolvers(protectedResolver, bet),
     projected: combineResolvers(protectedResolver, projected),
+    activeEvent: combineResolvers(protectedResolver, activeEvent),
+    nextActiveEvent: combineResolvers(protectedResolver, nextActiveEvent),
+    ranking: combineResolvers(protectedResolver, ranking),
   },
   Mutation: {
     createBet: combineResolvers(protectedResolver, createBet),
@@ -33,6 +36,7 @@ export default {
     verify,
     forgot,
     resetPassword,
+    updateResults: combineResolvers(protectedResolver, updateResults),
   },
 }
 
@@ -57,6 +61,7 @@ await sql`
           eventid integer NOT NULL,
           players text[] NOT NULL,
           result numeric,
+          season integer NOT NULL,
           created_on timestamp NOT NULL,
           PRIMARY KEY (userid, eventid),
           CONSTRAINT userid_fkey FOREIGN KEY (userid)

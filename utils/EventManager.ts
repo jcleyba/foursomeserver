@@ -43,6 +43,22 @@ class EventManager {
     }
   }
 
+  async getNextActiveEvent() {
+    try {
+      const eventList = await this.getEvents()
+      if (!eventList.length) return null
+
+      const idx = eventList.findIndex((item: any) =>
+        isThisWeek(new Date(item.startDate))
+      )
+
+      return eventList[idx + 1]
+    } catch (e) {
+      console.error(e)
+      return e
+    }
+  }
+
   async getLastActiveEvent() {
     try {
       const eventList = await this.getEvents()
