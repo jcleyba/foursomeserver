@@ -60,12 +60,16 @@ export async function createBet(_: any, args: any, context: any) {
       return Error('Event already finished or in play')
     }
 
+    const plyrsSql = sql.array(
+      players.map((a: Record<string, unknown>) => a.id)
+    )
     const [
       bet,
     ] = await sql`insert into bets (userid, eventid, players, result, created_on, season) values (
-      ${user.id}, ${eventId}, ${sql.array(
-      players.map((a: Record<string, unknown>) => a.id)
-    )}, 0, ${new Date().toISOString()}, ${season}) returning *`
+      ${
+        user.id
+      }, ${eventId}, ${plyrsSql}, 0, ${new Date().toISOString()}, ${season}) 
+      ON CONFLICT (userid, eventid) DO UPDATE SET players = ${plyrsSql} returning * `
 
     return {
       ...bet,

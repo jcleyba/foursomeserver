@@ -27,7 +27,7 @@ export async function login(_: any, args: any) {
 
     if (user) {
       const token = jwt.sign({ user }, process.env.PRIVATE_KEY || 'private', {
-        expiresIn: '24h',
+        expiresIn: '30d',
       })
 
       return {
@@ -59,7 +59,7 @@ export async function register(_: any, args: any) {
     if (user) {
       sendEmailVerification(email, verifyToken)
       const token = jwt.sign({ user }, process.env.PRIVATE_KEY || 'private', {
-        expiresIn: '24h',
+        expiresIn: '30d',
       })
       return { ...user, token }
     } else {
