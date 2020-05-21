@@ -62,4 +62,20 @@ export async function nextActiveEvent() {
   }
 }
 
+export async function compositeEvents() {
+  try {
+    const nextEvent = await EventManager.getNextActiveEvent()
+    const currentEvent = await EventManager.getActiveEvent()
+
+    if (currentEvent) {
+      const activeEvent = await event(null, { id: currentEvent.id })
+      return { activeEvent: { ...currentEvent, ...activeEvent }, nextEvent }
+    }
+
+    return { activeEvent: null, nextEvent }
+  } catch (e) {
+    return e.response
+  }
+}
+
 export default { event, events }

@@ -48,11 +48,9 @@ class EventManager {
       const eventList = await this.getEvents()
       if (!eventList.length) return null
 
-      const idx = eventList.findIndex((item: any) =>
-        isThisWeek(new Date(item.startDate))
-      )
+      const event = eventList.find((item: any) => item.status === 'pre')
 
-      return eventList[idx + 1]
+      return event
     } catch (e) {
       console.error(e)
       return e

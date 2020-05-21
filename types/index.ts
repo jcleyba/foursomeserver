@@ -68,8 +68,14 @@ const typeDefs = gql`
     password: String!
   }
 
+  type CompositeEvents {
+    activeEvent: Event
+    nextEvent: Event
+  }
+
   type Query {
     events: [Event]
+    compositeEvents: CompositeEvents
     event(id: String!): Event
     activeEvent: Event
     nextActiveEvent: Event

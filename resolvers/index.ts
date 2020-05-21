@@ -1,6 +1,12 @@
 import { AuthenticationError } from 'apollo-server'
 import { bet, bets, createBet, projected, updateResults, ranking } from './bets'
-import { activeEvent, event, events, nextActiveEvent } from './events'
+import {
+  activeEvent,
+  event,
+  events,
+  nextActiveEvent,
+  compositeEvents,
+} from './events'
 import { forgot, login, register, resetPassword, verify } from './users'
 
 //@ts-ignore
@@ -21,6 +27,7 @@ function protectedResolver(...args: any) {
 export default {
   Query: {
     events: combineResolvers(protectedResolver, events),
+    compositeEvents: combineResolvers(protectedResolver, compositeEvents),
     event: combineResolvers(protectedResolver, event),
     bets: combineResolvers(protectedResolver, bets),
     bet: combineResolvers(protectedResolver, bet),
