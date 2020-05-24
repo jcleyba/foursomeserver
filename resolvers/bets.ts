@@ -56,6 +56,7 @@ export async function createBet(_: any, args: any, context: any) {
     const { eventId, players, season } = args
 
     const activeEvent: any = await EventManager.getActiveEvent()
+
     if (activeEvent?.id !== eventId) {
       return Error('Event already finished or in play')
     }
