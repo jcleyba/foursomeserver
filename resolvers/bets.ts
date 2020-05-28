@@ -188,7 +188,8 @@ const mapPlayers = (players: any[], competitors: any[]) => {
   }
   let ret = []
   for (let player of players) {
-    ret.push(entry[player])
+    const pl: any = entry[player]
+    ret.push({ ...pl, img: pl?.img?.replace('.com', '.com/combiner/i?img=') })
   }
 
   return ret
