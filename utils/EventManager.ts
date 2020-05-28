@@ -15,14 +15,27 @@ class EventManager {
 
       const { data } = await axios.get(process.env.SCHEDULE_ENDPOINT || '')
 
-      this.events = data.events.map((event: any) => {
-        const id = event.link.split('=')[1]
+      this.events = data.events.reduce((memo: any[], event: any) => {
+        if (event?.link) {
+          const id = event?.link?.split('=')[1]
+          const flag = event?.athlete?.flag?.replace(
+            '.com',
+            '.com/combiner/i?img='
+          )
 
-        return {
-          id,
-          ...event,
+          memo.push({
+            id,
+            ...event,
+            athlete: {
+              ...event.athlete,
+              flag,
+            },
+            location: event?.locations[0].venue.fullName,
+          })
         }
-      })
+
+        return memo
+      }, [])
 
       return this.events
     } catch (e) {

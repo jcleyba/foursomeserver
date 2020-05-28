@@ -5,9 +5,7 @@ export async function events() {
   try {
     const events = await EventManager.getEvents()
 
-    return events.map((ev: any) => {
-      return { ...ev, location: ev.locations[0].venue.fullName }
-    })
+    return events
   } catch (e) {
     return e.response
   }
@@ -21,6 +19,13 @@ export async function event(_: any, args: Record<string, unknown>) {
     const { data } = await axios.get(url)
     const { leaderboard } = data
     const { id, name, competitors, status, season } = leaderboard
+    const players = competitors
+      ?.sort((a: any, b: any) => a.order - b.order)
+      ?.map((player: Record<string, any>) => ({
+        ...player,
+        score: player.toPar,
+        img: player?.img?.replace('.com', '.com/combiner/i?img='),
+      }))
 
     return {
       id,
@@ -29,12 +34,7 @@ export async function event(_: any, args: Record<string, unknown>) {
       season,
       leaderboard: {
         ...leaderboard,
-        players: competitors
-          ?.sort((a: any, b: any) => a.order - b.order)
-          ?.map((player: Record<string, unknown>) => ({
-            ...player,
-            score: player.toPar,
-          })),
+        players,
       },
     }
   } catch (e) {
@@ -46,7 +46,7 @@ export async function activeEvent() {
   try {
     const ev = await EventManager.getActiveEvent()
 
-    return { ...ev, location: ev.locations[0].venue.fullName }
+    return ev
   } catch (e) {
     return e.response
   }
@@ -56,7 +56,7 @@ export async function nextActiveEvent() {
   try {
     const ev = await EventManager.getNextActiveEvent()
 
-    return { ...ev, location: ev.locations[0].venue.fullName }
+    return ev
   } catch (e) {
     return e.response
   }
