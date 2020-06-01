@@ -35,7 +35,7 @@ export function sendPassRecovery(email: string, token: string) {
     from: 'Golf Time <inscripciones.golftime@gmail.com>',
     to: email,
     subject: 'Recuperación de contraseña',
-    html: `<p>Para generar una nueva contraseña por favor haga click <a href="${process.env.DOMAIN}/verify?token=${token}">aquí</a></p><p>El equipo de Golf Time</p>`,
+    html: `<p>Para generar una nueva contraseña por favor haga click <a href="${process.env.DOMAIN}/reset-password?token=${token}">aquí</a></p><p>El equipo de Golf Time</p>`,
   }
   // Enviamos el email
   transporter().sendMail(mailOptions, function (error: any, info: any) {

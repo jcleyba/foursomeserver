@@ -9,10 +9,9 @@ import {
 } from './events'
 import { forgot, login, register, resetPassword, verify } from './users'
 
-//@ts-ignore
-export const combineResolvers = (...funcs) => (...args) =>
+export const combineResolvers = (...funcs: any[]) => (...args: any[]) =>
   funcs.reduce(
-    (prevPromise, resolver) =>
+    (prevPromise: Promise<any>, resolver: Function) =>
       prevPromise.then((prev: any) =>
         prev === undefined ? resolver(...args) : prev
       ),
