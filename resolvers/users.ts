@@ -58,7 +58,7 @@ export async function register(_: any, args: any) {
     ] = await sql`insert into users (firstname, lastname, email, password, verified, created_on, token) values (${firstName}, ${lastName}, ${email}, ${hashedPassword}, false, ${new Date().toISOString()}, ${verifyToken}) returning *`
 
     if (user) {
-      sendEmailVerification(email, verifyToken)
+      await sendEmailVerification(email, verifyToken)
       const token = jwt.sign({ user }, process.env.PRIVATE_KEY || 'private', {
         expiresIn: '30d',
       })
@@ -98,7 +98,7 @@ export async function forgot(_: any, args: any) {
     const data = await sql`update users set token = ${token} where email = ${email}`
 
     if (data.count === 1) {
-      sendPassRecovery(email, token)
+      await sendPassRecovery(email, token)
       return true
     } else {
       return new Error('User not found!')
