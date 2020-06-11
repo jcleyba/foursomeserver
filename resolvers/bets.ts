@@ -170,7 +170,7 @@ export async function updateResults(_: any, args: any) {
     ])
 
     if (bets) {
-      await sql.begin(async (sql: any) => {
+      /* await sql.begin(async (sql: any) => {
         for (let bet of bets) {
           const players = mapPlayers(bet.players, leaderboard.competitors)
           const points = calcResult(players)
@@ -181,7 +181,7 @@ export async function updateResults(_: any, args: any) {
             [points, bet.userid, bet.eventid]
           )
         }
-      })
+      }) */
       return true
     } else {
       return Error('No bets found')
