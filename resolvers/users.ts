@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import bcrypt from 'bcrypt'
-import sql from '../db'
+import { query as sql } from '../db'
 import { sendEmailVerification, sendPassRecovery } from '../utils/mailer'
 import { getUser } from '../utils/user'
 
@@ -11,7 +11,9 @@ export async function login(_: any, args: any) {
 
     if (!email || !password) return Error('Invalid data')
 
-    const [user] = await sql`select * from users where email = ${email};`
+    const {
+      rows: { [0]: user },
+    } = await sql(`select * from users where email = $1;`, [email])
 
     if (!user) {
       return new Error('No user found')
@@ -53,9 +55,19 @@ export async function register(_: any, args: any) {
     const hashedPassword = await bcrypt.hash(password, 10)
     const verifyToken = crypto.randomBytes(64).toString('hex')
 
-    const [
-      user,
-    ] = await sql`insert into users (firstname, lastname, email, password, verified, created_on, token) values (${firstName}, ${lastName}, ${email}, ${hashedPassword}, false, ${new Date().toISOString()}, ${verifyToken}) returning *`
+    const {
+      rows: { [0]: user },
+    } = await sql(
+      `insert into users (firstname, lastname, email, password, verified, created_on, token) values ($1, $2, $3, $4, false, $5, $6) returning *`,
+      [
+        firstName,
+        lastName,
+        email,
+        hashedPassword,
+        new Date().toISOString(),
+        verifyToken,
+      ]
+    )
 
     if (user) {
       await sendEmailVerification(email, verifyToken)
@@ -76,9 +88,12 @@ export async function verify(_: any, args: any) {
   try {
     const token = args.token
 
-    const data = await sql`update users set verified = true, token = NULL where token = ${token}`
+    const data = await sql(
+      `update users set verified = true, token = NULL where token = $1`,
+      [token]
+    )
 
-    if (data.count === 1) {
+    if (data.rowCount === 1) {
       return true
     } else {
       return false
@@ -95,9 +110,12 @@ export async function forgot(_: any, args: any) {
     const token = jwt.sign({ email }, process.env.PRIVATE_KEY || 'private', {
       expiresIn: '1h',
     })
-    const data = await sql`update users set token = ${token} where email = ${email}`
+    const data = await sql(`update users set token = $1 where email = $2`, [
+      token,
+      email,
+    ])
 
-    if (data.count === 1) {
+    if (data.rowCount === 1) {
       await sendPassRecovery(email, token)
       return true
     } else {
@@ -116,9 +134,12 @@ export async function resetPassword(_: any, args: any) {
 
     if (user) {
       const hashedPassword = await bcrypt.hash(password, 10)
-      const data = await sql`update users set password = ${hashedPassword}, token = null where email = ${user.email}`
+      const data = await sql(
+        `update users set password = $1, token = null where email = $2`,
+        [hashedPassword, user.email]
+      )
 
-      if (data.count === 1) {
+      if (data.rowCount === 1) {
         return true
       } else {
         return new Error('User not found!')
