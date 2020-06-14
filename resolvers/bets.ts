@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { query as sql } from '../db'
+import { query as sql, pool } from '../db'
 import EventManager from '../utils/EventManager'
 
 const EVENT_STARTED = 'in'
@@ -170,19 +170,33 @@ export async function updateResults(_: any, args: any) {
     ])
 
     if (bets) {
-      /* await sql.begin(async (sql: any) => {
+      const client = await pool.connect()
+
+      try {
+        await client.query('BEGIN')
+
         for (let bet of bets) {
           const players = mapPlayers(bet.players, leaderboard.competitors)
           const points = calcResult(players)
-          const [
-            update,
-          ] = await sql(
+
+          await client.query(
             `update bets set result = $1 where userid = $2 and eventid = $3`,
             [points, bet.userid, bet.eventid]
           )
         }
-      }) */
-      return true
+
+        client.query('COMMIT')
+
+        return true
+      } catch (e) {
+        console.error(e)
+        await client.query('ROLLBACK')
+        throw e
+      } finally {
+        console.debug('release client')
+
+        client.release()
+      }
     } else {
       return Error('No bets found')
     }

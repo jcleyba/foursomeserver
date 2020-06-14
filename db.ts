@@ -1,6 +1,6 @@
 const { Pool } = require('pg')
 
-const pool = new Pool({
+export const pool = new Pool({
   host: process.env.DBHOST, // Postgres ip address or domain name
   port: 5432, // Postgres server port
   database: process.env.DBNAME, // Name of database to connect to
