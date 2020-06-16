@@ -28,6 +28,8 @@ const typeDefs = gql`
     img: String
     flag: String
     citizenship: String
+    today: String
+    thru: String
   }
   type Bet {
     userId: String!
