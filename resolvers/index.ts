@@ -1,5 +1,13 @@
 import { AuthenticationError } from 'apollo-server'
-import { bet, bets, createBet, projected, updateResults, ranking } from './bets'
+import {
+  bet,
+  bets,
+  createBet,
+  projected,
+  updateResults,
+  ranking,
+  eventWinner,
+} from './bets'
 import {
   activeEvent,
   event,
@@ -34,6 +42,7 @@ export default {
     activeEvent: combineResolvers(protectedResolver, activeEvent),
     nextActiveEvent: combineResolvers(protectedResolver, nextActiveEvent),
     ranking: combineResolvers(protectedResolver, ranking),
+    eventWinner: combineResolvers(protectedResolver, eventWinner),
   },
   Mutation: {
     createBet: combineResolvers(protectedResolver, createBet),

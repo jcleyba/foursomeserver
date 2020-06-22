@@ -206,6 +206,27 @@ export async function updateResults(_: any, args: any) {
   }
 }
 
+export async function eventWinner() {
+  try {
+    const {
+      rows: { [0]: bet },
+    } = await sql(
+      `select userid, firstname, lastname, result from bets inner join users on bets.userid = users.id ORDER BY result desc, bets.created_on desc limit 1;`
+    )
+    console.debug(bet)
+    return {
+      user: {
+        firstName: bet.firstname,
+        lastName: bet.lastname,
+      },
+      bet: { result: bet.result },
+    }
+  } catch (e) {
+    console.error(e)
+    return e
+  }
+}
+
 const mapPlayers = (players: any[], competitors: any[]) => {
   if (!players || !competitors) return []
   let entry: Record<string, unknown> = {}

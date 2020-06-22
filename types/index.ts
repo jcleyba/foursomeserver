@@ -75,6 +75,11 @@ const typeDefs = gql`
     nextEvent: Event
   }
 
+  type EventWinner {
+    user: User
+    bet: Bet
+  }
+
   type Query {
     events: [Event]
     compositeEvents: CompositeEvents
@@ -85,6 +90,7 @@ const typeDefs = gql`
     bet(eventId: String!): Bet
     projected(eventId: String!): [Ranking]
     ranking: [Ranking]
+    eventWinner: EventWinner
   }
 
   type Mutation {
