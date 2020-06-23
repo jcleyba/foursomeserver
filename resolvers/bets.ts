@@ -213,7 +213,7 @@ export async function eventWinner() {
     } = await sql(
       `select userid, firstname, lastname, result from bets inner join users on bets.userid = users.id ORDER BY result desc, bets.created_on desc limit 1;`
     )
-    console.debug(bet)
+
     return {
       user: {
         firstName: bet.firstname,
