@@ -50,8 +50,10 @@ class EventManager {
       const eventList = await this.getEvents()
       if (!eventList.length) return null
 
-      return eventList.find((item: any) =>
-        isThisWeek(new Date(item.startDate), { weekStartsOn: 1 })
+      return eventList.find(
+        (item: any) =>
+          isThisWeek(new Date(item.startDate), { weekStartsOn: 1 }) &&
+          item.description !== 'Canceled'
       )
     } catch (e) {
       console.error(e)
@@ -68,7 +70,8 @@ class EventManager {
         (item: any) =>
           item.status === 'pre' &&
           !isThisWeek(new Date(item.startDate), { weekStartsOn: 1 }) &&
-          isAfter(new Date(item.startDate), new Date())
+          isAfter(new Date(item.startDate), new Date()) &&
+          item.description !== 'Canceled'
       )
 
       return event
