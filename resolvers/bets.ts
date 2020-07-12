@@ -208,10 +208,12 @@ export async function updateResults(_: any, args: any) {
 
 export async function eventWinner() {
   try {
+    const lastEvent = await EventManager.getLastActiveEvent()
     const {
       rows: { [0]: bet },
     } = await sql(
-      `select userid, firstname, lastname, result from bets inner join users on bets.userid = users.id ORDER BY result desc, bets.created_on desc limit 1;`
+      `select userid, firstname, lastname, result from bets inner join users on bets.userid = users.id WHERE eventid = $1  ORDER BY result desc limit 1;`,
+      [lastEvent.id]
     )
 
     return {

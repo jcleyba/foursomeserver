@@ -6,6 +6,9 @@ export const pool = new Pool({
   database: process.env.DBNAME, // Name of database to connect to
   user: process.env.DBUSER, // Username of database user
   password: process.env.DBPASS, // Password of database user
+  /* ssl: {
+    rejectUnauthorized: false,
+  }, */
 })
 
 export const query = (text: string, params?: any[], callback?: () => void) => {
