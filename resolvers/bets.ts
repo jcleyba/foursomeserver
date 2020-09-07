@@ -82,7 +82,7 @@ export async function createBet(_: any, args: any, context: any) {
       ...bet,
       userId: user.id,
       eventId,
-      season: new Date(bet.created_on).getFullYear(),
+      season,
     }
   } catch (e) {
     console.error(e)
@@ -138,11 +138,9 @@ export async function projected(_: any, args: any) {
 
 export async function ranking(_: any) {
   try {
-    const {
-      rows: ranking,
-    } = await sql(`select userid, firstname, lastname, SUM(result) 
-    from bets inner join users on bets.userid = users.id 
-    GROUP BY userid, firstname, lastname ORDER BY sum(result) desc`)
+    const { rows: ranking } = await sql(
+      `select userid, firstname, lastname, SUM(result) from bets inner join users on bets.userid = users.id where season = 2020 GROUP BY userid, firstname, lastname ORDER BY sum(result) desc;`
+    )
 
     return ranking?.map((r: any) => ({
       firstName: r.firstname,
