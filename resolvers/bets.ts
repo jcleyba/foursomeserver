@@ -99,7 +99,7 @@ export async function projected(_: any, args: any) {
     const {
       rows: ranking,
     } = await sql(`select userid, firstname, lastname, SUM(result) 
-    from bets inner join users on bets.userid = users.id 
+    from bets inner join users on bets.userid = users.id where season = 2021
     GROUP BY userid, firstname, lastname ORDER BY sum(result) desc`)
 
     const { leaderboard } = data
@@ -139,7 +139,7 @@ export async function projected(_: any, args: any) {
 export async function ranking(_: any) {
   try {
     const { rows: ranking } = await sql(
-      `select userid, firstname, lastname, SUM(result) from bets inner join users on bets.userid = users.id where season = 2020 GROUP BY userid, firstname, lastname ORDER BY sum(result) desc;`
+      `select userid, firstname, lastname, SUM(result) from bets inner join users on bets.userid = users.id where season = 2021 GROUP BY userid, firstname, lastname ORDER BY sum(result) desc;`
     )
 
     return ranking?.map((r: any) => ({
@@ -211,7 +211,7 @@ export async function eventWinner() {
       rows: { [0]: bet },
     } = await sql(
       `select userid, firstname, lastname, result from bets inner join users on bets.userid = users.id WHERE eventid = $1  ORDER BY result desc limit 1;`,
-      [lastEvent.id]
+      [lastEvent?.id]
     )
 
     return {
