@@ -96,9 +96,8 @@ export async function projected(_: any, args: any) {
 
     const { data } = await axios.get(process.env.LEADERBOARD_ENDPOINT + eventId)
 
-    const {
-      rows: ranking,
-    } = await sql(`select userid, firstname, lastname, SUM(result) 
+    const { rows: ranking } =
+      await sql(`select userid, firstname, lastname, SUM(result) 
     from bets inner join users on bets.userid = users.id where season = 2021
     GROUP BY userid, firstname, lastname ORDER BY sum(result) desc`)
 
@@ -248,7 +247,7 @@ const calcResult = (players: any[] = []) => {
 
   for (let player of players) {
     const position = player.pos
-    if (position === '-') {
+    if (!position || position === '-') {
       sum += 0
     } else {
       const number: number = parseFloat(position.replace('T', ''))
