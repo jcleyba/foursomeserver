@@ -53,7 +53,7 @@ class EventManager {
       return eventList.find(
         (item: any) =>
           isThisWeek(new Date(item.startDate), { weekStartsOn: 2 }) &&
-          item.description !== 'Canceled' && item.description !== 'Final'
+          item.description !== 'Canceled'
       )
     } catch (e) {
       console.error(e)
