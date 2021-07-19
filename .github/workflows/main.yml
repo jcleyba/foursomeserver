@@ -23,7 +23,7 @@ jobs:
       - name: Call our API route
         run: |
           curl --request POST \
-          --url 'http://foursomeserver.herokuapp.com/graphql' \
+          --url "https://foursomeserver.herokuapp.com/graphql" \
           --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjo0LCJmaXJzdG5hbWUiOiJKdWFuIENydXoiLCJsYXN0bmFtZSI6IkxleWJhIiwicGFzc3dvcmQiOiIkMmIkMTAkdm16QWYzWnE4N2NoVGg0LlBhV1RVdU03YjFPYXh3TnhXNDBJaDJQMkMya2RXc2hjbHdiOWkiLCJlbWFpbCI6InRlZW9mZmdvbGZAZ21haWwuY29tIiwiY3JlYXRlZF9vbiI6IjIwMjAtMDUtMjBUMTc6MDM6MjAuNTk1WiIsInZlcmlmaWVkIjp0cnVlLCJ0b2tlbiI6ImV5SmhiR2NpT2lKSVV6STFOaUlzSW5SNWNDSTZJa3BYVkNKOS5leUpsYldGcGJDSTZJblJsWlc5bVptZHZiR1pBWjIxaGFXd3VZMjl0SWl3aWFXRjBJam94TlRrek5UVTVNVE00TENKbGVIQWlPakUxT1RNMU5qSTNNemg5LkNQaWRwZzREWC1qNERneEg2Q0pwXzZpWG5tNzhQTFBMWm5Ccnh3UzBIWDQifSwiaWF0IjoxNjI0ODg1ODU4LCJleHAiOjE2Mjc0Nzc4NTh9.kiZN1FPz_KHzqo4m6chJtcPUEdS0f1eAtnNKY7_iOGQ' \
           --header 'Accept-Encoding: gzip, deflate, br' \
           --header 'Content-Type: application/json' \
@@ -31,5 +31,5 @@ jobs:
           --header 'Connection: keep-alive' \
           --header 'DNT: 1' \
           --header 'Origin: http://foursomeserver.herokuapp.com' \
-          --data-binary '{"query":"# Write your query or mutation here\nmutation UpdateResults {\n  updateResults(eventId:\"401243411\")\n}"}' \ 
+          --data-binary '{"query":"# Write your query or mutation here\nmutation UpdateResults {\n  updateResults(eventId:\"401243411\")\n}"}'
    
