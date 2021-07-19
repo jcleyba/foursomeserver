@@ -1,5 +1,5 @@
 import axios from 'axios'
-import sql from '../db'
+import { query as sql, pool } from '../db'
 import EventManager from '../utils/EventManager'
 
 const EVENT_STARTED = 'in'
@@ -8,36 +8,41 @@ const EVENT_FINISHED = 'post'
 
 export async function bets() {
   try {
-    const [bet] = await sql`select id, userId from bets;`
+    const { rows: bet } = await sql(`select id, userId from bets;`)
 
     return bet
   } catch (e) {
-    throw e
+    return e
   }
 }
 
 export async function bet(_: any, args: any, context: any) {
   try {
-    const { userId, eventId } = args
-    const [bet] = await sql`select * from bets where 
-    userid = ${userId} and eventid = ${eventId}`
+    const { user } = context.user
+    const { eventId } = args
+
+    const {
+      rows: { [0]: bet },
+    } = await sql(
+      `select * from bets where 
+    userid = $1 and eventid = $2;`,
+      [user.id, eventId]
+    )
 
     if (!bet) {
       return null
     }
-
     const { data } = await axios.get(
-      process.env.LEADERBOARD_ENDPOINT || '' + eventId
+      `${process.env.LEADERBOARD_ENDPOINT}${eventId}`
     )
 
-    const { userid, eventid, players: storedBet } = bet
+    const { userid, eventid, players: storedBet, result: res } = bet
     const { leaderboard } = data
 
     const players = mapPlayers(storedBet, leaderboard.competitors)
-
     // Checking if tournament started or finished
     const result =
-      leaderboard.status === EVENT_STARTED ? calcResult(players) : 0
+      leaderboard.status === EVENT_STARTED ? calcResult(players) : res
 
     return {
       userId: userid,
@@ -47,35 +52,41 @@ export async function bet(_: any, args: any, context: any) {
     }
   } catch (e) {
     console.error(e)
-    throw e
+    return e
   }
 }
 
-export async function createBet(_: any, args: any) {
+export async function createBet(_: any, args: any, context: any) {
   try {
-    const { userId, eventId, players } = args
+    const { user } = context.user
+    const { eventId, players, season } = args
 
     const activeEvent: any = await EventManager.getActiveEvent()
+
     if (activeEvent?.id !== eventId) {
-      throw Error('Event already finished or in play')
+      return Error('Event already finished or in play')
     }
 
-    const [
-      bet,
-    ] = await sql`insert into bets (userid, eventid, players, result, created_on) values (
-      ${userId}, ${eventId}, ${sql.array(
-      players.map((a: Record<string, unknown>) => a.id)
-    )}, 0, ${new Date().toISOString()}) returning *`
+    const plyrsSql = players.map((a: Record<string, unknown>) => a.id)
+
+    const {
+      rows: { [0]: bet },
+    } = await sql(
+      `insert into bets (userid, eventid, players, result, created_on, season) values (
+      $1, $2, $3, $4, $5, $6) 
+      ON CONFLICT (userid, eventid) DO UPDATE SET players = $3 returning * `,
+      [user.id, eventId, plyrsSql, 0, new Date().toISOString(), season]
+    )
 
     return {
       ...bet,
-      userId,
+      userId: user.id,
       eventId,
-      season: new Date(bet.created_on).getFullYear(),
+      season,
     }
   } catch (e) {
     console.error(e)
-    throw e
+    return e
   }
 }
 
@@ -85,25 +96,27 @@ export async function projected(_: any, args: any) {
 
     const { data } = await axios.get(process.env.LEADERBOARD_ENDPOINT + eventId)
 
-    const ranking = await sql`select userid, firstname, lastname, SUM(result) 
-    from bets inner join users on bets.userid = users.id 
-    GROUP BY userid, firstname, lastname ORDER BY sum(result) desc`
+    const { rows: ranking } =
+      await sql(`select userid, firstname, lastname, SUM(result) 
+    from bets inner join users on bets.userid = users.id where season = 2021
+    GROUP BY userid, firstname, lastname ORDER BY sum(result) desc`)
 
-    const { count } = ranking
     const { leaderboard } = data
 
     if (leaderboard?.status === EVENT_STARTED) {
-      const bets = await sql`select * from bets where eventid = ${eventId}`
-      const { count } = bets
+      const { rows: bets } = await sql(
+        `select * from bets where eventid = $1`,
+        [eventId]
+      )
 
       let proj: any = {}
-      for (let bet of bets.slice(0, count)) {
+      for (let bet of bets) {
         const players = mapPlayers(bet.players, leaderboard.competitors)
         const points = calcResult(players)
         proj[bet.userid] = { ...bet, points }
       }
 
-      return ranking.slice(0, count).map((rank: any) => ({
+      return ranking.map((rank: any) => ({
         firstName: rank.firstname,
         lastName: rank.lastname,
         points: rank.sum,
@@ -111,47 +124,105 @@ export async function projected(_: any, args: any) {
       }))
     }
 
-    return ranking.slice(0, count).map((rank: any) => ({
+    return ranking.map((rank: any) => ({
       firstName: rank.firstname,
       lastName: rank.lastname,
       points: rank.sum,
     }))
   } catch (e) {
     console.error(e)
-    throw e
+    return e
   }
 }
 
-export async function updateResults(eventId: string) {
+export async function ranking(_: any) {
   try {
-    if (!eventId) throw Error('Invalid request')
+    const { rows: ranking } = await sql(
+      `select userid, firstname, lastname, SUM(result) from bets inner join users on bets.userid = users.id where season = 2021 GROUP BY userid, firstname, lastname ORDER BY sum(result) desc;`
+    )
+
+    return ranking?.map((r: any) => ({
+      firstName: r.firstname,
+      lastName: r.lastname,
+      points: r.sum,
+    }))
+  } catch (e) {
+    console.error(e)
+    return e
+  }
+}
+
+export async function updateResults(_: any, args: any) {
+  try {
+    const { eventId } = args
+    if (!eventId) return Error('Invalid request')
 
     const { data } = await axios.get(process.env.LEADERBOARD_ENDPOINT + eventId)
     const { leaderboard } = data
 
-    if (!data || !leaderboard) throw Error('Error getting leaderboard')
+    if (!data || !leaderboard) return Error('Error getting leaderboard')
 
-    const bets = await sql`select * from bets where eventid = ${eventId}`
+    const { rows: bets } = await sql(`select * from bets where eventid = $1`, [
+      eventId,
+    ])
 
     if (bets) {
-      const { count } = bets
+      const client = await pool.connect()
 
-      await sql.begin(async (sql: any) => {
-        for (let bet of bets.slice(0, count)) {
+      try {
+        await client.query('BEGIN')
+
+        for (let bet of bets) {
           const players = mapPlayers(bet.players, leaderboard.competitors)
           const points = calcResult(players)
-          const [
-            update,
-          ] = await sql`update bets set result = ${points} where userid = ${bet.userid} and eventid = ${bet.eventid}`
+
+          await client.query(
+            `update bets set result = $1 where userid = $2 and eventid = $3`,
+            [points, bet.userid, bet.eventid]
+          )
         }
-      })
-      return true
+
+        client.query('COMMIT')
+
+        return true
+      } catch (e) {
+        console.error(e)
+        await client.query('ROLLBACK')
+        throw e
+      } finally {
+        console.debug('release client')
+
+        client.release()
+      }
     } else {
-      throw Error('No bets found')
+      return Error('No bets found')
     }
   } catch (e) {
     console.error(e)
-    throw e
+    return e
+  }
+}
+
+export async function eventWinner() {
+  try {
+    const lastEvent = await EventManager.getLastActiveEvent()
+    const {
+      rows: { [0]: bet },
+    } = await sql(
+      `select userid, firstname, lastname, result from bets inner join users on bets.userid = users.id WHERE eventid = $1  ORDER BY result desc limit 1;`,
+      [lastEvent?.id]
+    )
+
+    return {
+      user: {
+        firstName: bet.firstname,
+        lastName: bet.lastname,
+      },
+      bet: { result: bet.result },
+    }
+  } catch (e) {
+    console.error(e)
+    return e
   }
 }
 
@@ -163,7 +234,8 @@ const mapPlayers = (players: any[], competitors: any[]) => {
   }
   let ret = []
   for (let player of players) {
-    ret.push(entry[player])
+    const pl: any = entry[player]
+    ret.push({ ...pl, img: pl?.img?.replace('.com', '.com/combiner/i?img=') })
   }
 
   return ret
@@ -175,7 +247,7 @@ const calcResult = (players: any[] = []) => {
 
   for (let player of players) {
     const position = player.pos
-    if (position === '-') {
+    if (!position || position === '-') {
       sum += 0
     } else {
       const number: number = parseFloat(position.replace('T', ''))

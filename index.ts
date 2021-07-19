@@ -13,15 +13,15 @@ const server = new ApolloServer({
   resolvers,
   introspection: true,
   playground: true,
-  context: async ({ req }) => {
+  context: async ({ req, res }) => {
     try {
       const tokenWithBearer = req.headers.authorization || ''
       const token = tokenWithBearer.split(' ')[1]
       const user = await getUser(token)
 
-      return { user }
+      return { req, res, user }
     } catch (e) {
-      throw new AuthenticationError('you must be logged in')
+      return new AuthenticationError('you must be logged in')
     }
   },
 })
@@ -32,7 +32,7 @@ const job = new CronJob('* 1 0 * * 1', async () => {
   try {
     const event = await EventManager.getLastActiveEvent()
     console.log(`*** Event ${event.name} ***`)
-    const done = await updateResults(event.id)
+    const done = await updateResults(null, { eventId: event.id })
     if (done) {
       console.log(`*** Done Updating ***`)
     } else {

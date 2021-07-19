@@ -13,30 +13,68 @@ export async function events() {
 
 export async function event(_: any, args: Record<string, unknown>) {
   const { id: eventId } = args
-  if (!eventId) throw Error('Id is missing')
+  if (!eventId) return Error('Id is missing')
   try {
-    const { data } = await axios.get(
-      process.env.LEADERBOARD_ENDPOINT || '' + eventId
-    )
+    const url = `${process.env.LEADERBOARD_ENDPOINT || ''}${eventId}`
+    const { data } = await axios.get(url)
     const { leaderboard } = data
-    const { id, name, competitors, status } = leaderboard
+    const { id, name, competitors, status, season } = leaderboard
+    const players = competitors
+      ?.sort((a: any, b: any) => a.order - b.order)
+      ?.map((player: Record<string, any>) => ({
+        ...player,
+        score: player.toPar,
+        img: player?.img?.replace('.com', '.com/combiner/i?img='),
+      }))
 
     return {
       id,
       name,
       status,
+      season,
       leaderboard: {
         ...leaderboard,
-        players: competitors
-          .sort((a: any, b: any) => a.order - b.order)
-          .map((player: Record<string, unknown>) => ({
-            ...player,
-            score: player.toPar,
-          })),
+        players,
       },
     }
   } catch (e) {
-    throw e
+    return e
+  }
+}
+
+export async function activeEvent() {
+  try {
+    const ev = await EventManager.getActiveEvent()
+
+    return ev
+  } catch (e) {
+    return e.response
+  }
+}
+
+export async function nextActiveEvent() {
+  try {
+    const ev = await EventManager.getNextActiveEvent()
+
+    return ev
+  } catch (e) {
+    return e.response
+  }
+}
+
+export async function compositeEvents() {
+  try {
+    const nextEvent = await EventManager.getNextActiveEvent()
+    const currentEvent = await EventManager.getActiveEvent()
+
+    if (currentEvent) {
+      const activeEvent = await event(null, { id: currentEvent.id })
+      return { activeEvent: { ...currentEvent, ...activeEvent }, nextEvent }
+    }
+
+    return { activeEvent: null, nextEvent }
+  } catch (e) {
+    return e.response
   }
 }
 

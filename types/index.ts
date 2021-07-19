@@ -8,6 +8,11 @@ const typeDefs = gql`
     endDate: String
     status: String
     leaderboard: Leaderboard
+    athlete: Player
+    purse: String
+    location: String
+    isMajor: Boolean
+    season: Int
   }
 
   type Leaderboard {
@@ -22,6 +27,9 @@ const typeDefs = gql`
     score: String
     img: String
     flag: String
+    citizenship: String
+    today: String
+    thru: String
   }
   type Bet {
     userId: String!
@@ -62,18 +70,37 @@ const typeDefs = gql`
     password: String!
   }
 
+  type CompositeEvents {
+    activeEvent: Event
+    nextEvent: Event
+  }
+
+  type EventWinner {
+    user: User
+    bet: Bet
+  }
+
   type Query {
     events: [Event]
+    compositeEvents: CompositeEvents
     event(id: String!): Event
+    activeEvent: Event
+    nextActiveEvent: Event
     bets: [Bet]
-    bet(userId: String!, eventId: String!): Bet
+    bet(eventId: String!): Bet
     projected(eventId: String!): [Ranking]
+    ranking: [Ranking]
+    eventWinner: EventWinner
   }
 
   type Mutation {
-    createBet(userId: String, eventId: String, players: [PlayersInput]): Bet
+    createBet(eventId: String, players: [PlayersInput], season: Int): Bet
     login(loginData: LoginInput): User
     register(registerData: RegisterInput): User
+    verify(token: String!): Boolean
+    forgot(email: String!): Boolean
+    resetPassword(token: String!, password: String!): Boolean
+    updateResults(eventId: String!): Boolean
   }
 `
 

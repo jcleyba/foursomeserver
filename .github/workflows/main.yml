@@ -1,0 +1,35 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Update results
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  schedule:
+    - cron: "0 9 * * MON-TUE"
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  cron:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Call our API route
+        run: |
+          curl --request POST \
+          --url 'http://foursomeserver.herokuapp.com/graphql' \
+          --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}'
+          --header 'Accept-Encoding: gzip, deflate, br'
+          --header 'Content-Type: application/json'
+          --header 'Accept: application/json'
+          --header 'Connection: keep-alive' 
+          --header 'DNT: 1' 
+          --header 'Origin: http://foursomeserver.herokuapp.com'
+          --data-binary '{"query":"# Write your query or mutation here\nmutation UpdateResults {\n  updateResults(eventId:\"401243411\")\n}"}' --compressed
+   
