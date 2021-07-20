@@ -1,5 +1,6 @@
 import axios from 'axios'
 import isThisWeek from 'date-fns/isThisWeek'
+import isSameWeek from 'date-fns/isSameWeek'
 import isAfter from 'date-fns/isAfter'
 
 // Singleton to access events
@@ -73,7 +74,6 @@ class EventManager {
           isAfter(new Date(item.startDate), new Date()) &&
           item.description !== 'Canceled'
       )
-
       return event
     } catch (e) {
       console.error(e)
@@ -87,8 +87,21 @@ class EventManager {
       if (!eventList.length) return null
 
       const index = eventList.findIndex((item: any) => item.status !== 'post')
+      const current = eventList[index - 1]
+      const secondary = eventList[index - 2]
+      let match = false
+      if (current && secondary) {
+        match = isSameWeek(
+          new Date(current.startDate),
+          new Date(secondary.startDate)
+        )
+      }
 
-      return eventList[index - 1]
+      if (match) {
+        return current.isMaj ? current : secondary
+      }
+
+      return current
     } catch (e) {
       console.error(e)
       return e
