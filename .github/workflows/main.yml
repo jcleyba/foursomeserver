@@ -24,7 +24,7 @@ jobs:
         run: |
           curl --request POST \
           --url 'http://foursomeserver.herokuapp.com/graphql' \
-          --header 'Authorization: Bearer ${{ secrets.ACCESS_SECRET }}'
+          --header 'Authorization: Bearer ${{ secrets.ACCESS_SECRET }}' \
           --header 'Accept-Encoding: gzip, deflate, br'
           --header 'Content-Type: application/json'
           --header 'Accept: application/json'
