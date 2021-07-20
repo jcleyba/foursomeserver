@@ -25,10 +25,10 @@ jobs:
           curl --request POST \
           --url 'http://foursomeserver.herokuapp.com/graphql' \
           --header 'Authorization: Bearer ${{ secrets.ACCESS_SECRET }}' \
-          --header 'Accept-Encoding: gzip, deflate, br'
-          --header 'Content-Type: application/json'
-          --header 'Accept: application/json'
-          --header 'Connection: keep-alive' 
-          --header 'DNT: 1' 
-          --header 'Origin: http://foursomeserver.herokuapp.com'
-          --data-binary '{"query":"# Write your query or mutation here\nmutation UpdateResults {\n  updateResults\n}"}' --compressed
+          --header 'Accept-Encoding: gzip, deflate, br' \
+          --header 'Content-Type: application/json' \
+          --header 'Accept: application/json' \
+          --header 'Connection: keep-alive' \
+          --header 'DNT: 1' \
+          --header 'Origin: http://foursomeserver.herokuapp.com' \
+          --data-binary '{"query":"# Write your query or mutation here\nmutation UpdateResults {\n  updateResults\n}"}'
