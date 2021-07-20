@@ -154,8 +154,17 @@ export async function ranking(_: any) {
 
 export async function updateResults(_: any, args: any) {
   try {
-    const { eventId } = args
-    if (!eventId) return Error('Invalid request')
+    let { eventId } = args
+
+    if (!args.eventId) {
+      const lastEvent = await EventManager.getLastActiveEvent()
+
+      eventId = lastEvent.id
+    }
+
+    if (!eventId) {
+      return Error('Invalid request. Wrong eventId')
+    }
 
     const { data } = await axios.get(process.env.LEADERBOARD_ENDPOINT + eventId)
     const { leaderboard } = data
