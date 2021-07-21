@@ -101,6 +101,7 @@ const typeDefs = gql`
     forgot(email: String!): Boolean
     resetPassword(token: String!, password: String!): Boolean
     updateResults(eventId: String): Boolean
+    verifyTeeTimes: Boolean
   }
 `
 

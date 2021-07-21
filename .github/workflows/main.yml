@@ -7,6 +7,7 @@ on:
   # Triggers the workflow on push or pull request events but only for the master branch
   schedule:
     - cron: '0 9 * * MON-TUE'
+    - mail: '0 */6 * * TUE-WED'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -32,3 +33,22 @@ jobs:
           --header 'DNT: 1' \
           --header 'Origin: http://foursomeserver.herokuapp.com' \
           --data-binary '{"query":"# Write your query or mutation here\nmutation UpdateResults {\n  updateResults\n}"}'
+  # This workflow contains a single job called "build"
+  mail:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Call our mail route
+        run: |
+          curl --request POST \
+          --url 'http://foursomeserver.herokuapp.com/graphql' \
+          --header 'Authorization: Bearer ${{ secrets.ACCESS_SECRET }}' \
+          --header 'Accept-Encoding: gzip, deflate, br' \
+          --header 'Content-Type: application/json' \
+          --header 'Accept: application/json' \
+          --header 'Connection: keep-alive' \
+          --header 'DNT: 1' \
+          --header 'Origin: http://foursomeserver.herokuapp.com' \
+          --data-binary '{"query":"# Write your query or mutation here\nmutation VerifyTeeTimes {\n  verifyTeeTimes\n}"}'
