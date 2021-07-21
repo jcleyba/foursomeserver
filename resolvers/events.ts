@@ -1,5 +1,8 @@
 import axios from 'axios'
 import EventManager from '../utils/EventManager'
+import { hasMailBeenSent } from '../utils/imap'
+import { query as sql } from '../db'
+import { sendTeeTimes } from '../utils/mailer'
 
 export async function events() {
   try {
@@ -73,6 +76,32 @@ export async function compositeEvents() {
     }
 
     return { activeEvent: null, nextEvent }
+  } catch (e) {
+    return e.response
+  }
+}
+
+export async function verifyTeeTimes() {
+  try {
+    const mailSent = await hasMailBeenSent()
+    const nextEvent = await EventManager.getActiveEvent()
+
+    if (!mailSent && nextEvent) {
+      const next = await event(null, { id: nextEvent.id })
+      if (next?.leaderboard?.players?.length) {
+        const { rows } = await sql(
+          `select email from users where verified = true;`
+        )
+
+        await sendTeeTimes(
+          rows.map((row: { email: string }) => row.email),
+          nextEvent.id,
+          next.name
+        )
+      }
+    }
+
+    return true
   } catch (e) {
     return e.response
   }

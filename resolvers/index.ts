@@ -14,17 +14,20 @@ import {
   events,
   nextActiveEvent,
   compositeEvents,
+  verifyTeeTimes,
 } from './events'
 import { forgot, login, register, resetPassword, verify } from './users'
 
-export const combineResolvers = (...funcs: any[]) => (...args: any[]) =>
-  funcs.reduce(
-    (prevPromise: Promise<any>, resolver: Function) =>
-      prevPromise.then((prev: any) =>
-        prev === undefined ? resolver(...args) : prev
-      ),
-    Promise.resolve()
-  )
+export const combineResolvers =
+  (...funcs: any[]) =>
+  (...args: any[]) =>
+    funcs.reduce(
+      (prevPromise: Promise<any>, resolver: Function) =>
+        prevPromise.then((prev: any) =>
+          prev === undefined ? resolver(...args) : prev
+        ),
+      Promise.resolve()
+    )
 
 function protectedResolver(...args: any) {
   const [, , context] = args
@@ -52,6 +55,7 @@ export default {
     forgot,
     resetPassword,
     updateResults: combineResolvers(protectedResolver, updateResults),
+    verifyTeeTimes: combineResolvers(protectedResolver, verifyTeeTimes),
   },
 }
 

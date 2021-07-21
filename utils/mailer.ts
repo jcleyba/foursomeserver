@@ -57,3 +57,34 @@ export async function sendPassRecovery(email: string, token: string) {
     })
   })
 }
+
+export async function sendTeeTimes(
+  emails: string[],
+  eventId: string,
+  eventName: string
+) {
+  const eventFullName = eventName.toLowerCase().startsWith('the')
+    ? eventName
+    : `el ${eventName}`
+
+  const mailOptions = {
+    from: 'Golf Time <inscripciones.golftime@gmail.com>',
+    to: 'inscripciones.golftime@gmail.com',
+    bcc: emails.toString(),
+    subject: `Field disponible para ${eventFullName}!`,
+    html: `<p>Amigo golfista,</p><p>Ya se encuentra disponible el field de ${eventFullName} y podés elegir tus jugadores para este torneo haciendo click <a href="${process.env.DOMAIN}/events/${eventId}">aquí</a>.
+    </p><p>Buena suerte!</p><p>El Equipo de Golf Time</p>`,
+  }
+  return new Promise((resolve, reject) => {
+    // Enviamos el email
+    transporter().sendMail(mailOptions, function (error: any, info: any) {
+      if (error) {
+        console.log(error)
+        reject(error)
+      } else {
+        console.log('Email sent')
+        resolve('Email sent')
+      }
+    })
+  })
+}
