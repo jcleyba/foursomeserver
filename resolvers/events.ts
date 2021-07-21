@@ -85,19 +85,18 @@ export async function verifyTeeTimes() {
   try {
     const mailSent = await hasMailBeenSent()
     const nextEvent = await EventManager.getActiveEvent()
+    console.debug('Email sent: ', mailSent)
 
     if (!mailSent && nextEvent) {
+      console.debug('Next event: ', nextEvent)
       const next = await event(null, { id: nextEvent.id })
+
       if (next?.leaderboard?.players?.length) {
         const { rows } = await sql(
           `select email from users where verified = true;`
         )
 
-        await sendTeeTimes(
-          rows.map((row: { email: string }) => row.email),
-          nextEvent.id,
-          next.name
-        )
+        await sendTeeTimes([], nextEvent.id, next.name)
       }
     }
 
