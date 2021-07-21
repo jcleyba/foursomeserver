@@ -85,6 +85,7 @@ export async function verifyTeeTimes() {
   try {
     const mailSent = await hasMailBeenSent()
     const nextEvent = await EventManager.getActiveEvent()
+    console.debug('Mail sent: ', mailSent)
 
     if (!mailSent && nextEvent) {
       const next = await event(null, { id: nextEvent.id })
