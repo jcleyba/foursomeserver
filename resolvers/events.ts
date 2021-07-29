@@ -87,7 +87,7 @@ export async function verifyTeeTimes() {
     const nextEvent = await EventManager.getActiveEvent()
     console.debug('Mail sent: ', mailSent)
 
-    if (!mailSent && nextEvent) {
+    if (!mailSent && nextEvent?.status === 'pre') {
       const next = await event(null, { id: nextEvent.id })
       if (next?.leaderboard?.players?.length) {
         const { rows } = await sql(

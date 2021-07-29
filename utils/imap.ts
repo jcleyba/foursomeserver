@@ -25,7 +25,7 @@ export async function hasMailBeenSent() {
     )
 
     const date = lastMessage?.envelope?.date
-    const hasBeenSent = isThisWeek(new Date(date))
+    const hasBeenSent = isThisWeek(new Date(date), { weekStartsOn: 1 })
     console.log('Last Message: ', lastMessage.envelope)
 
     client.close()
