@@ -31,7 +31,7 @@ class EventManager {
               ...event.athlete,
               flag,
             },
-            location: event?.locations[0].venue.fullName,
+            location: event?.locations?.[0]?.venue?.fullName,
           })
         }
 
@@ -49,9 +49,9 @@ class EventManager {
   async getActiveEvent() {
     try {
       const eventList = await this.getEvents()
-      if (!eventList.length) return null
+      if (!eventList?.length) return null
 
-      return eventList.find(
+      return eventList?.find(
         (item: any) =>
           isThisWeek(new Date(item.startDate), { weekStartsOn: 2 }) &&
           item.description !== 'Canceled'
@@ -65,9 +65,9 @@ class EventManager {
   async getNextActiveEvent() {
     try {
       const eventList = await this.getEvents()
-      if (!eventList.length) return null
+      if (!eventList?.length) return null
 
-      const event = eventList.find(
+      const event = eventList?.find(
         (item: any) =>
           item.status === 'pre' &&
           !isThisWeek(new Date(item.startDate), { weekStartsOn: 1 }) &&
@@ -84,9 +84,9 @@ class EventManager {
   async getLastActiveEvent() {
     try {
       const eventList = await this.getEvents()
-      if (!eventList.length) return null
+      if (!eventList?.length) return null
 
-      const index = eventList.findIndex((item: any) => item.status !== 'post')
+      const index = eventList?.findIndex((item: any) => item.status !== 'post')
       const current = eventList[index - 1]
       const secondary = eventList[index - 2]
       let match = false
