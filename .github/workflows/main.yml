@@ -23,7 +23,7 @@ jobs:
       - name: Call our API route
         run: |
           curl --request POST \
-          --url 'http://foursomeserver.herokuapp.com/graphql' \
+          --url 'https://golf-time-be.onrender.com/graphql' \
           --header 'Authorization: Bearer ${{ secrets.ACCESS_SECRET }}' \
           --header 'Accept-Encoding: gzip, deflate, br' \
           --header 'Content-Type: application/json' \
@@ -42,7 +42,7 @@ jobs:
       - name: Call our mail route
         run: |
           curl --request POST \
-          --url 'http://foursomeserver.herokuapp.com/graphql' \
+          --url 'https://golf-time-be.onrender.com/graphql' \
           --header 'Authorization: Bearer ${{ secrets.ACCESS_SECRET }}' \
           --header 'Accept-Encoding: gzip, deflate, br' \
           --header 'Content-Type: application/json' \
