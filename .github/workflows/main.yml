@@ -51,3 +51,4 @@ jobs:
           --header 'DNT: 1' \
           --header 'Origin: http://foursomeserver.herokuapp.com' \
           --data-binary '{"query":"# Write your query or mutation here\nmutation VerifyTeeTimes {\n  verifyTeeTimes\n}"}'
+
